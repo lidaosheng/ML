@@ -1,0 +1,10 @@
+Package: ML
+Type: Package
+Title: Machine Learning
+Version: 0.1.0
+Author: lifei
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: just a practice
+License: Personal
+Encoding: UTF-8
+LazyData: true
