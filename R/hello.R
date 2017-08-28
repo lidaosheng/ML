@@ -22,12 +22,19 @@ gain<-function(dataset,label,attr){
   #求出各属性子集占总的比率
   p = sapply(type_num,function(x){x/length(attr)})
   #求出被属性切割后的数据集的熵乘以该数据集占总得比例
-  entropys = mapply(function(x,y){data=dataset[attr==x,];e=entropy(data,label);e*y},names,p)
+  entropys = mapply(function(x,y){data=dataset[attr==x,];ifelse(dim(data)[1]==0,0,{e=entropy(data,label);e*y})},
+                    names,
+                    p)
   entropy_t = sum(entropys)
   return(entropy_s-entropy_t)
 }
 #挑选最佳属性，根据信息增益
-chooseBest<-function(data,label,attrs){
+chooseBest<-function(data,label){
+  attrs<-colnames(data)
+  if(length(attrs)==1){
+    return("没有可用特征")
+  }
+  attrs = attrs[-length(attrs)]
   gains = sapply(attrs,function(x){gain(data,label,x)})
   attr = names(which(gains==max(gains)))
   return(attr)
@@ -49,27 +56,38 @@ splitDataset<-function(dataset,label,attr){
 #终止条件
 isStop<-function(dataset,label){
   dim_data<-dim(dataset)
-  if(dim_data[0]==0){
+  if(dim_data[1]==0){
     print("没有可处理的数据")
     return(1)
   }
-  if(dim_data[2]==1){
+  if(dim_data[2]<=1){
     ptint("没有可处理的特征")
     return(1)
   }
   #如果label已有一种，终止
   label2<-dataset[,label]
+  rm(dataset)
   tb<-table(label2)
-  if(length(tb)==1){return(1)}
+  print(tb)
+  if(prod(tb)==0){
+    print("label已经完全归类")
+    return(1)
+  }
+  return(0)
 }
-ID3<-function(dataset,label_name,attr_names){
+ID3<-function(dataset,label){
   #create root
-  root = NULL
-  if(all(dataset[,label_name]==0)==TRUE){}
-  if(all(dataset[,label_name]==1)==TRUE){}
-  if(is.na(attr_names)){}
+  #root = NULL
+  #if(all(dataset[,label_name]==0)==TRUE){}
+  #if(all(dataset[,label_name]==1)==TRUE){}
+  #if(is.na(attr_names)){}
   #attribute中分类性能最好的属性
-
+  stop1 = isStop(dataset,label)
+  ifelse(stop1==1,stop("this tree stop grow"),{
+         attr = chooseBest(dataset,label)
+         datasets = splitDataset(dataset,label,attr)
+         lapply(datasets,function(x){if(!isStop(x,label)){ID3(x,label)}})}
+         )
 
 
 
